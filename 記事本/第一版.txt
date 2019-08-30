@@ -1,0 +1,262 @@
+import pygame
+import random
+import time
+import math
+pygame.init()
+
+
+def randColour():
+    r = random.randint(0, 255)
+    g = random.randint(0, 255)
+    b = random.randint(0, 255)
+    return (r, g, b)
+
+def move(image1, image2):
+    global locount
+    if locount < 5:
+        image = image1
+    elif locount >= 5:
+        image = image2
+    if locount >= 10:
+        locount = 0
+    else:
+        locount += 1
+    return image
+
+# Window setup
+size = [957, 574]
+screen = pygame.display.set_mode(size)
+clock = pygame.time.Clock()
+
+black = pygame.color.Color("#000000")
+colour = randColour
+count = 0
+click = False
+limit = 50
+pos = (0, 0)
+
+# Load images
+background = pygame.image.load("BG.JPG")
+
+
+#----------------sound---------------------
+shot = pygame.mixer.Sound("se_maoudamashii_onepoint15.wav")
+boom = pygame.mixer.Sound("se_maoudamashii_explosion06.wav")
+walk=pygame.mixer.Sound("se_maoudamashii_instruments_bass13.mp3")
+    
+#--------------------------------------
+
+#----------------------------------------
+standing = pygame.image.load('S2.png')
+down1 = pygame.image.load('S1.png')
+down2 = pygame.image.load('S3.png')
+up1 = pygame.image.load('W1.png')
+up2 = pygame.image.load('W3.png')
+left1 = pygame.image.load('L1.png')
+left2 = pygame.image.load('L3.png')
+right1 = pygame.transform.flip(left1, True, False)
+right2 = pygame.transform.flip(left2, True, False)
+
+# player position
+x = random.randrange(20, size[0]-20)
+y = random.randrange(20, size[1]-20)
+
+
+#teleport position
+x1 = random.randrange(20, size[0]-20)
+y1 = random.randrange(20, size[1]-20)
+
+
+# colours
+red = pygame.color.Color('#FF8080')
+blue = pygame.color.Color('#8080FF')
+white = pygame.color.Color('#FFFFFF')
+black = pygame.color.Color('#000000')
+yellow=pygame.color.Color('#FFFF33')
+
+def checkOffScreenloX(lox):
+    if lox > size[0]:
+        lox= 0
+    elif lox < 0:
+        lox = size[0]
+    return lox
+def checkOffScreenloY(loy):
+    if loy > size[1]:
+        loy = 0
+    elif loy < 0:
+        loy = size[1]
+    return loy
+
+def checkOffScreenX(x):
+    if x > size[0]:
+        x= 0
+    elif x < 0:
+        x = size[0]
+    return x
+def checkOffScreenY(y):
+    if y > size[1]:
+        y = 0
+    elif y < 0:
+        y = size[1]
+    return y
+
+def checkOffScreenX1(x1):
+    if x1 > size[0]:
+        x1= 0
+    elif x1 < 0:
+        x1 = size[0]
+    return x1
+def checkOffScreenY1(y1):
+    if y1 > size[1]:
+        y1 = 0
+    elif y1 < 0:
+        y1 = size[1]
+    return y1
+
+def checkTouching():
+    """Causes a mini explosion if the players are touching"""
+    global x
+    global y
+    global x1
+    global y1
+    global pos
+
+
+
+pygame.mixer.music.load("bgm_maoudamashii_fantasy15.mp3")
+pygame.mixer.music.play()
+teleportSound =pygame.mixer.Sound("teleport.wav")
+        
+# Game loop
+done = False
+
+# get current time
+timeStart = pygame.time.get_ticks()
+locount=0
+lox=0
+loy=0
+while not done:
+    screen.fill(black)
+    if click and count < limit:
+        boom.play()
+        pygame.draw.circle(screen, colour, pos,count)
+        count += 7
+        if count >= limit:
+            click = False
+
+    for event in pygame.event.get():
+        if event.type ==pygame.MOUSEBUTTONDOWN:
+            pos = pygame.mouse.get_pos()
+            click = True
+            count = 0
+            colour = randColour()
+        if event.type == pygame.QUIT:
+            done = True
+
+    keys = pygame.key.get_pressed()
+    
+    #player movement
+    if keys[pygame.K_LSHIFT]:
+        if keys[pygame.K_w]:
+            walk.play()
+            image = move(up1,up2)
+            loy -= 5
+            y -= 5
+        elif keys[pygame.K_s]:
+            walk.play()
+            image = move(down1,down2)
+            loy += 5
+            y +=5
+        elif keys[pygame.K_a]:
+            walk.play()
+            image = move(left1,left2)
+            lox -= 5
+            x -=5
+        elif keys[pygame.K_d]:
+            walk.play()
+            image = move(right1,right2)
+            lox += 5
+            x +=5
+        else:
+            image =standing
+            locount=0
+            
+    else:
+        if count == 0:
+            teleportSound.play()
+        if keys[pygame.K_w]:
+            walk.play()
+            image = move(up1,up2)
+            loy -= 3
+            y -= 3
+        elif keys[pygame.K_s]:
+            walk.play()
+            image = move(down1,down2)
+            loy += 3
+            y +=3
+        elif keys[pygame.K_a]:
+            walk.play()
+            image = move(left1,left2)
+            lox -= 3
+            x -=3
+        elif keys[pygame.K_d]:
+            walk.play()
+            image = move(right1,right2)
+            lox += 3
+            x +=3
+        else:
+            image =standing
+            locount=0
+    if keys[pygame.K_LSHIFT]:
+        if keys[pygame.K_i]:
+            y1 -= 5
+        elif keys[pygame.K_k]:
+            y1 +=5
+        elif keys[pygame.K_j]:
+            x1 -=5
+        elif keys[pygame.K_l]:
+            x1 +=5
+    else:
+        if count == 0:
+            teleportSound.play()
+        if keys[pygame.K_i]:
+            y1 -= 3
+        elif keys[pygame.K_k]:
+            y1 +=3
+        elif keys[pygame.K_j]:
+            x1 -=3
+        elif keys[pygame.K_l]:
+            x1 +=3
+    # Check off screen
+    x = checkOffScreenX(x)
+    y = checkOffScreenY(y)
+    x1 = checkOffScreenX1(x1)
+    y1 = checkOffScreenY1(y1)
+    lox=checkOffScreenloX(lox)
+    loy=checkOffScreenloY(loy)
+
+#------------------------------
+    screen.blit(background, (0, 0))
+
+    # draw player
+    pygame.draw.circle(screen, yellow, [x, y], 5)
+    screen.blit(image,(lox,loy))
+
+
+    # draw player2
+    pygame.draw.circle(screen, yellow, [x1, y1], 5)
+    
+
+    pygame.display.flip()
+    
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            done = True
+    # Check elapsed time
+    timeNow = pygame.time.get_ticks()
+    if timeNow - timeStart >= 60000:
+        done = True
+        
+    clock.tick(32)
+pygame.quit()
+

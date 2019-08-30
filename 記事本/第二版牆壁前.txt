@@ -1,0 +1,354 @@
+import pygame
+import random
+import time
+import math
+pygame.init()
+
+
+def randColour():
+    r = random.randint(0, 255)
+    g = random.randint(0, 255)
+    b = random.randint(0, 255)
+    return (r, g, b)
+
+#player1 move
+def move(image1, image2):
+    global locount
+    if locount < 5:
+        image = image1
+    elif locount >= 5:
+        image = image2
+    if locount >= 10:
+        locount = 0
+    else:
+        locount += 1
+    return image
+
+#player2 move
+def move1(p2image1, p2image2):
+    global p2locount
+    if p2locount < 5:
+        p2image = p2image1
+    elif p2locount >= 5:
+        p2image = p2image2
+    if p2locount >= 10:
+        p2locount = 0
+    else:
+        p2locount += 1
+    return p2image
+
+# Window setup
+size = [957, 574]
+screen = pygame.display.set_mode(size)
+clock = pygame.time.Clock()
+
+black = pygame.color.Color("#000000")
+colour = randColour
+count = 0
+click = False
+limit = 50
+pos = (0, 0)
+
+# Load images
+background = pygame.image.load("BG.JPG")
+
+
+#----------------sound---------------------
+shot = pygame.mixer.Sound("se_maoudamashii_onepoint15.wav")
+boom = pygame.mixer.Sound("se_maoudamashii_explosion06.wav")
+walk=pygame.mixer.Sound("se_maoudamashii_instruments_bass13.mp3")
+    
+#--------------------------------------
+
+#player1 picture
+standing = pygame.image.load('AS2.png')
+down1 = pygame.image.load('AS1.png')
+down2 = pygame.image.load('AS3.png')
+upstanding = pygame.image.load('AW2.png')
+up1 = pygame.image.load('AW1.png')
+up2 = pygame.image.load('AW3.png')
+leftstanding = pygame.image.load('AL2.png')
+left1 = pygame.image.load('AL1.png')
+left2 = pygame.image.load('AL3.png')
+rightstanding = pygame.image.load('AR2.png')
+right1 = pygame.transform.flip(left1, True, False)
+right2 = pygame.transform.flip(left2, True, False)
+
+#player2 picture
+p2standing = pygame.image.load('BS2.png')
+p2down1 = pygame.image.load('BS1.png')
+p2down2 = pygame.image.load('BS3.png')
+p2upstanding = pygame.image.load('BW2.png')
+p2up1 = pygame.image.load('BW1.png')
+p2up2 = pygame.image.load('BW3.png')
+p2leftstanding = pygame.image.load('BL2.png')
+p2left1 = pygame.image.load('BL1.png')
+p2left2 = pygame.image.load('BL3.png')
+p2rightstanding = pygame.image.load('BR2.png')
+p2right1 = pygame.transform.flip(p2left1, True, False)
+p2right2 = pygame.transform.flip(p2left2, True, False)
+
+
+# colours
+red = pygame.color.Color('#FF8080')
+blue = pygame.color.Color('#8080FF')
+white = pygame.color.Color('#FFFFFF')
+black = pygame.color.Color('#000000')
+yellow=pygame.color.Color('#FFFF33')
+
+def checkOffScreenloX(lox):
+    if lox > size[0]:
+        lox= 0
+    elif lox < 0:
+        lox = size[0]
+    return lox
+def checkOffScreenloY(loy):
+    if loy > size[1]:
+        loy = 0
+    elif loy < 0:
+        loy = size[1]
+    return loy
+
+
+def checkOffScreenX1(x1):
+    if x1 > size[0]:
+        x1= 0
+    elif x1 < 0:
+        x1 = size[0]
+    return x1
+def checkOffScreenY1(y1):
+    if y1 > size[1]:
+        y1 = 0
+    elif y1 < 0:
+        y1 = size[1]
+    return y1
+
+pygame.mixer.music.load("bgm_maoudamashii_fantasy15.mp3")
+pygame.mixer.music.play()
+teleportSound =pygame.mixer.Sound("teleport.wav")
+        
+# Game loop
+done = False
+
+# get current time
+timeStart = pygame.time.get_ticks()
+locount=0
+p2locount=0
+lox=0
+loy=0
+x1=100
+y1=100
+direction=0
+p2direction=0
+while not done:
+    screen.fill(black)
+    if click and count < limit:
+        boom.play()
+        pygame.draw.circle(screen, colour, pos,count)
+        count += 7
+        if count >= limit:
+            click = False
+
+    for event in pygame.event.get():
+        if event.type ==pygame.MOUSEBUTTONDOWN:
+            pos = pygame.mouse.get_pos()
+            click = True
+            count = 0
+            colour = randColour()
+        if event.type == pygame.QUIT:
+            done = True
+
+    keys = pygame.key.get_pressed()
+    
+    #player1 movement
+
+    if keys[pygame.K_LSHIFT]:
+        if keys[pygame.K_w]:
+            walk.play()
+            image = move(up1,up2)
+            loy -= 5
+            direction=1
+            
+        elif keys[pygame.K_s]:
+            walk.play()
+            image = move(down1,down2)
+            loy += 5
+            direction=0
+           
+        elif keys[pygame.K_a]:
+            walk.play()
+            image = move(left1,left2)
+            lox -= 5
+            direction=2
+          
+        elif keys[pygame.K_d]:
+            walk.play()
+            image = move(right1,right2)
+            lox += 5
+            direction=3
+        else:
+            if direction==1:
+                image=upstanding
+                locount=0
+            elif direction==2:
+                image=leftstanding
+                locount=0
+            elif direction==3:
+                image=rightstanding
+                locount=0
+            else:
+                image =standing
+                locount=0
+            
+    else:
+        if count == 0:
+            teleportSound.play()
+        if keys[pygame.K_w]:
+            walk.play()
+            image = move(up1,up2)
+            loy -= 3
+            direction=1
+        
+        elif keys[pygame.K_s]:
+            walk.play()
+            image = move(down1,down2)
+            loy += 3
+            direction=0
+           
+        elif keys[pygame.K_a]:
+            walk.play()
+            image = move(left1,left2)
+            lox -= 3
+            direction=2
+            
+        elif keys[pygame.K_d]:
+            walk.play()
+            image = move(right1,right2)
+            lox += 3
+            direction=3
+            
+        else:
+            if direction==1:
+                image=upstanding
+                locount=0
+            elif direction==2:
+                image=leftstanding
+                locount=0
+            elif direction==3:
+                image=rightstanding
+                locount=0
+            else:
+                image =standing
+                locount=0
+            
+#player2 movement
+    if keys[pygame.K_LSHIFT]:
+        if keys[pygame.K_i]:
+            walk.play()
+            p2image = move1(p2up1,p2up2)
+            y1 -= 5
+            p2direction=1
+            
+        elif keys[pygame.K_k]:
+            walk.play()
+            p2image = move1(p2down1,p2down2)
+            y1 +=5
+            p2direction=0
+            
+        elif keys[pygame.K_j]:
+            walk.play()
+            p2image = move1(p2left1,p2left2)
+            x1 -=5
+            p2direction=2
+            
+        elif keys[pygame.K_l]:
+            walk.play()
+            p2image = move1(p2right1,p2right2)
+            x1 +=5
+            p2direction=3
+            
+        else:
+            if p2direction==1:
+                p2image=p2upstanding
+                p2locount=0
+            elif p2direction==2:
+                p2image=p2leftstanding
+                p2locount=0
+            elif p2direction==3:
+                p2image=p2rightstanding
+                p2locount=0
+            else:
+                p2image =p2standing
+                p2locount=0
+    else:
+        if count == 0:
+            teleportSound.play()
+        if keys[pygame.K_i]:
+            walk.play()
+            p2image = move1(p2up1,p2up2)
+            y1 -= 3
+            p2direction=1
+            
+        elif keys[pygame.K_k]:
+            walk.play()
+            p2image = move1(p2down1,p2down2)
+            y1 +=3
+            p2direction=0
+            
+        elif keys[pygame.K_j]:
+            walk.play()
+            p2image = move1(p2left1,p2left2)
+            x1 -=3
+            p2direction=2
+            
+        elif keys[pygame.K_l]:
+            walk.play()
+            p2image = move1(p2right1,p2right2)
+            x1 +=3
+            p2direction=3
+            
+        else:
+            if p2direction==1:
+                p2image=p2upstanding
+                p2locount=0
+            elif p2direction==2:
+                p2image=p2leftstanding
+                p2locount=0
+            elif p2direction==3:
+                p2image=p2rightstanding
+                p2locount=0
+            else:
+                p2image =p2standing
+                p2locount=0
+                
+    # Check off screen
+    x1 = checkOffScreenX1(x1)
+    y1 = checkOffScreenY1(y1)
+    lox=checkOffScreenloX(lox)
+    loy=checkOffScreenloY(loy)
+
+#------------------------------
+    screen.blit(background, (0, 0))
+
+    # draw player
+
+    screen.blit(image,(lox,loy))
+
+
+    # draw player2
+    screen.blit(p2image,(x1,y1))
+    
+
+    pygame.display.flip()
+    
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            done = True
+    # Check elapsed time
+    timeNow = pygame.time.get_ticks()
+    if timeNow - timeStart >= 60000:
+        done = True
+        
+    clock.tick(32)
+pygame.quit()
+
